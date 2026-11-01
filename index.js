@@ -1,12 +1,17 @@
 import express from "express";
 import { MongoClient } from "mongodb";
 import 'dotenv/config'
+import cors from "cors";
 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const client = new MongoClient("mongodb://<db_username>:<db_password>@ac-auhxnex-shard-00-00.ekwx5uj.mongodb.net:27017,ac-auhxnex-shard-00-01.ekwx5uj.mongodb.net:27017,ac-auhxnex-shard-00-02.ekwx5uj.mongodb.net:27017/?ssl=true&replicaSet=atlas-lv7u6f-shard-0&authSource=admin");
+app.use(cors());
+app.use(express.json());
+
+const client = new MongoClient(process.env.DB_URI);
+
 export async function connectToMongoDB() {
   try {
     await client.connect();
@@ -17,8 +22,34 @@ export async function connectToMongoDB() {
   }
 }
 
+const dbClient = await connectToMongoDB();
+const db = dbClient.db("book_nook");
+const addedCollection = db.collection("my-books");
+
+
 app.get("/", (req, res) => {
   res.send("Hello BookNook Server!");
+});
+
+app.post("/add-books", async (req, res) => {
+  const myBooks = req.body;
+  try {
+    const result = await addedCollection.insertOne(myBooks);
+    res.send(result);
+  } catch (error) {
+    console.error("Error inserting book:", error);
+    res.status(500).send("An error occurred while adding the book.");
+  }
+})
+
+app.get("/my-books", async (req, res) => {
+  try {
+    const books = await addedCollection.find({}).toArray();
+    res.send(books);
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    res.status(500).send("An error occurred while fetching the books.");
+  }
 });
 
 app.listen(PORT, () => {
