@@ -38,6 +38,8 @@ app.post("/add-books", async (req, res) => {
     title: title.trim(),
     author: author.trim(),
     description: description.trim(),
+    userEmail: userEmail.trim(),
+    userName: userName.trim(),
     createdAt: new Date()
   };
   try {
