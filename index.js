@@ -32,14 +32,13 @@ app.get("/", (req, res) => {
 });
 
 app.post("/add-books", async (req, res) => {
-  const {image, title, author, description} = req.body;
+  const {image, title, author, description, ...otherData} = req.body;
   const newBook = {
-    image: image.trim(),
-    title: title.trim(),
-    author: author.trim(),
-    description: description.trim(),
-    userEmail: userEmail.trim(),
-    userName: userName.trim(),
+    image: image?.trim(),
+    title: title?.trim(),
+    author: author?.trim(),
+    description: description?.trim(),
+    ...otherData,
     createdAt: new Date()
   };
   try {
