@@ -1,5 +1,5 @@
 import express from "express";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import 'dotenv/config'
 import cors from "cors";
 
@@ -42,6 +42,16 @@ app.post("/add-books", async (req, res) => {
   }
 })
 
+app.get("/latest-books", async (req, res) => {
+  try {
+    const latestBooks = await addedCollection.find({}).sort({ _id: -1 }).limit(3).toArray();
+    res.send(latestBooks);
+  } catch (error) {
+    console.error("Error fetching latest books:", error);
+    res.status(500).send("An error occurred while fetching the latest books.");
+  }
+});
+
 app.get("/all-books", async (req, res) => {
   try {
     const allBooks = await addedCollection.find({}).toArray();
@@ -49,6 +59,20 @@ app.get("/all-books", async (req, res) => {
   } catch (error) {
     console.error("Error fetching books:", error);
     res.status(500).send("An error occurred while fetching the books.");
+  }
+});
+
+app.get("/all-books/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await addedCollection.findOne({ _id: new ObjectId(id) });
+    if (!book) {
+      return res.status(404).send("Book not found.");
+    }
+    res.send(book);
+  } catch (error) {
+    console.error("Error fetching book:", error);
+    res.status(500).send("An error occurred while fetching the book.");
   }
 });
 
