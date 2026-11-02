@@ -33,8 +33,12 @@ app.get("/", (req, res) => {
 
 app.post("/add-books", async (req, res) => {
   const myBooks = req.body;
+  const newBook = {
+    ...myBooks,
+    createdAt: new Date()
+  };
   try {
-    const result = await addedCollection.insertOne(myBooks);
+    const result = await addedCollection.insertOne(newBook);
     res.send(result);
   } catch (error) {
     console.error("Error inserting book:", error);
@@ -44,7 +48,7 @@ app.post("/add-books", async (req, res) => {
 
 app.get("/latest-books", async (req, res) => {
   try {
-    const latestBooks = await addedCollection.find({}).sort({ _id: -1 }).limit(3).toArray();
+    const latestBooks = await addedCollection.find({}).sort({ createdAt: -1 }).limit(3).toArray();
     res.send(latestBooks);
   } catch (error) {
     console.error("Error fetching latest books:", error);
