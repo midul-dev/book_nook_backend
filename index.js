@@ -42,10 +42,10 @@ app.post("/add-books", async (req, res) => {
   }
 })
 
-app.get("/my-books", async (req, res) => {
+app.get("/all-books", async (req, res) => {
   try {
-    const books = await addedCollection.find({}).toArray();
-    res.send(books);
+    const allBooks = await addedCollection.find({}).toArray();
+    res.send(allBooks);
   } catch (error) {
     console.error("Error fetching books:", error);
     res.status(500).send("An error occurred while fetching the books.");
