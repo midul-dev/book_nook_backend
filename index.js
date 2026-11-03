@@ -24,7 +24,7 @@ export async function connectToMongoDB() {
 
 const dbClient = await connectToMongoDB();
 const db = dbClient.db("book_nook");
-const addedCollection = db.collection("my-books");
+const addedCollection = db.collection("books");
 
 
 app.get("/", (req, res) => {
