@@ -89,6 +89,20 @@ app.post("/add-borrow", async (req, res) => {
   }
 });
 
+// borrowCount
+app.get("/borrow-count", async (req, res) => {
+  try {
+    const email = req.query.email;
+    // Tomar borrowed books er collection er nam dibe ekhane
+    const count = await borrowsCollection.countDocuments({ userEmail: email });
+    
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching borrow count:", error);
+    res.status(500).json({ error: "Failed to fetch count" });
+  }
+});
+
 app.delete("/return-book/:id", async (req, res) => {
   const id = req.params.id;
   try {
