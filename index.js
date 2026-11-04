@@ -128,10 +128,10 @@ app.patch("/update-book/:id", async (req, res) => {
     };
     const result = await addedCollection.updateOne(findBook, updatedBook);
 
-    if (result.modifiedCount < 0) {
+    if (result.modifiedCount > 0) {
       res.status(200).json({ message: "Book updated successfully!" });
     } else {
-      res.status(404).json({ error: "Book not found." });
+      res.status(404).json({ error: "No changes made or book not found." });
     }
   } catch (error) {
     console.error("Error updating book:", error);
