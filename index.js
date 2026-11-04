@@ -56,10 +56,12 @@ app.post("/add-books", async (req, res) => {
     };
 
     const result = await addedCollection.insertOne(newBook);
-    res.status(200).json({message : "Book added successfully! It is now available for borrowing."});
+    res.status(200).json({
+      message: "Book added successfully! It is now available for borrowing.",
+    });
   } catch (error) {
     console.error("Error inserting book:", error);
-    res.status(500).send("An error occurred while adding the book.");
+    res.status(500).json({ error: "An error occurred while adding the book." });
   }
 });
 
@@ -101,6 +103,41 @@ app.delete("/return-book/:id", async (req, res) => {
     res
       .status(500)
       .json({ error: "An error occurred while returning the book." });
+  }
+});
+
+// my book update api
+app.patch("/update-book/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+
+  try {
+    const findBook = {
+      _id: new ObjectId(id),
+    };
+
+    const updatedBook = {
+      $set: {
+        author: updatedData.author,
+        category: updatedData.category,
+        copies: updatedData.copies,
+        description: updatedData.description,
+        image: updatedData.image,
+        title: updatedData.title,
+      },
+    };
+    const result = await addedCollection.updateOne(findBook, updatedBook);
+
+    if (result.modifiedCount < 0) {
+      res.status(200).json({ message: "Book updated successfully!" });
+    } else {
+      res.status(404).json({ error: "Book not found." });
+    }
+  } catch (error) {
+    console.error("Error updating book:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the book." });
   }
 });
 
