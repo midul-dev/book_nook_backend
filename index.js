@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
   res.send("Hello BookNook Server!");
 });
 
-app.post("/add-books", async (req, res) => {
+app.post("/add-books", verifyToken, async (req, res) => {
   const { image, title, author, description, userEmail, ...otherData } =
     req.body;
 
@@ -87,7 +87,7 @@ app.post("/add-books", async (req, res) => {
   }
 });
 
-app.post("/add-borrow", async (req, res) => {
+app.post("/add-borrow", verifyToken, async (req, res) => {
   const borrows = req.body;
   try {
     const isAlreadyBowwrow = await borrowsCollection.findOne({
@@ -125,7 +125,7 @@ app.get("/borrow-count", async (req, res) => {
   }
 });
 
-app.delete("/return-book/:id", async (req, res) => {
+app.delete("/return-book/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
     const result = await borrowsCollection.deleteOne({ _id: new ObjectId(id) });
@@ -143,7 +143,7 @@ app.delete("/return-book/:id", async (req, res) => {
 });
 
 // my book update api
-app.patch("/update-book/:id", async (req, res) => {
+app.patch("/update-book/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   const updatedData = req.body;
 
@@ -207,13 +207,13 @@ app.get("/all-books", async (req, res) => {
   }
 });
 
-app.get("/my-books", async (req, res) => {
+app.get("/my-books", verifyToken, async (req, res) => {
   const email = req.query.email;
   const myBooks = await addedCollection.find({ userEmail: email }).toArray();
   res.json(myBooks);
 });
 
-app.delete("/delete-book/:id", async (req, res) => {
+app.delete("/delete-book/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   const result = await addedCollection.deleteOne({ _id: new ObjectId(id) });
   if (result.deletedCount === 1) {
@@ -223,7 +223,7 @@ app.delete("/delete-book/:id", async (req, res) => {
   }
 });
 
-app.get("/all-books/:id", async (req, res) => {
+app.get("/all-books/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const book = await addedCollection.findOne({ _id: new ObjectId(id) });
