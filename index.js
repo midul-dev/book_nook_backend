@@ -2,6 +2,7 @@ import express from "express";
 import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
 import cors from "cors";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +26,27 @@ const dbClient = await connectToMongoDB();
 const db = dbClient.db("book_nook");
 const addedCollection = db.collection("books");
 const borrowsCollection = db.collection("borrows");
+
+// middleware
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "Unauthorize" });
+  }
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const JWKS = createRemoteJWKSet(
+      new URL("http://localhost:3000/api/auth/jwks"),
+    );
+    const { payload } = await jwtVerify(token, JWKS);
+    next();
+  } catch (error) {
+    console.lop("Futhoraization fail", error);
+    return res.status(500).json({ error: "Internal server error!" });
+  }
+};
 
 app.get("/", (req, res) => {
   res.send("Hello BookNook Server!");
@@ -95,7 +117,7 @@ app.get("/borrow-count", async (req, res) => {
     const email = req.query.email;
     // Tomar borrowed books er collection er nam dibe ekhane
     const count = await borrowsCollection.countDocuments({ userEmail: email });
-    
+
     res.status(200).json({ count });
   } catch (error) {
     console.error("Error fetching borrow count:", error);
@@ -155,7 +177,7 @@ app.patch("/update-book/:id", async (req, res) => {
   }
 });
 
-app.get("/my-borrows", async (req, res) => {
+app.get("/my-borrows", verifyToken, async (req, res) => {
   const email = req.query.email;
   const result = await borrowsCollection.find({ userEmail: email }).toArray();
   res.send(result);
