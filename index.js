@@ -38,12 +38,12 @@ const verifyToken = async (req, res, next) => {
 
   try {
     const JWKS = createRemoteJWKSet(
-      new URL("http://localhost:3000/api/auth/jwks"),
+      new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
     );
     const { payload } = await jwtVerify(token, JWKS);
     next();
   } catch (error) {
-    console.lop("Futhoraization fail", error);
+    console.log("Futhoraization fail", error);
     return res.status(500).json({ error: "Internal server error!" });
   }
 };
@@ -188,7 +188,7 @@ app.get("/latest-books", async (req, res) => {
     const latestBooks = await addedCollection
       .find({})
       .sort({ createdAt: -1 })
-      .limit(3)
+      .limit(6)
       .toArray();
     res.send(latestBooks);
   } catch (error) {
@@ -240,3 +240,5 @@ app.get("/all-books/:id", verifyToken, async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+export default app
