@@ -89,6 +89,9 @@ app.post("/add-books", verifyToken, async (req, res) => {
 
 app.post("/add-borrow", verifyToken, async (req, res) => {
   const borrows = req.body;
+  console.log("➡️ Received Body:", borrows);
+  console.log("➡️ BookId Received:", borrows.bookId);
+
   try {
     const isAlreadyBowwrow = await borrowsCollection.findOne({
       bookId: borrows.bookId,
@@ -101,15 +104,14 @@ app.post("/add-borrow", verifyToken, async (req, res) => {
         .json({ error: "You have already borrowed this book." });
     }
 
-
     const updateResult = await addedCollection.updateOne(
-      { 
-        _id: new ObjectId(borrows.bookId), 
-        copies: { $gt: 0 } 
+      {
+        _id: new ObjectId(borrows.bookId),
+        copies: { $gt: 0 },
       },
-      { 
-        $inc: { copies: -1 } 
-      }
+      {
+        $inc: { copies: -1 },
+      },
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -145,8 +147,20 @@ app.get("/borrow-count", async (req, res) => {
 app.delete("/return-book/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
+    const borrowRecord = await borrowsCollection.findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!borrowRecord) {
+      return res.status(404).json({ error: "Borrow record not found." });
+    }
+
     const result = await borrowsCollection.deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 1) {
+      await addedCollection.updateOne(
+        { _id: new ObjectId(borrowRecord.bookId) },
+        { $inc: { copies: 1 } },
+      );
       res.status(200).json({ message: "Book returned successfully" });
     } else {
       res.status(404).json({ error: "Borrow record not found" });
@@ -258,4 +272,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-export default app
+export default app;
