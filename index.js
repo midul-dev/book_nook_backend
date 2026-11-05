@@ -101,6 +101,23 @@ app.post("/add-borrow", verifyToken, async (req, res) => {
         .json({ error: "You have already borrowed this book." });
     }
 
+
+    const updateResult = await addedCollection.updateOne(
+      { 
+        _id: new ObjectId(borrows.bookId), 
+        copies: { $gt: 0 } 
+      },
+      { 
+        $inc: { copies: -1 } 
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res
+        .status(400)
+        .json({ error: "This book is currently out of stock." });
+    }
+
     const result = await borrowsCollection.insertOne(borrows);
     res.json({ message: "You Borrowing is Successfull" });
   } catch (error) {
